@@ -1,0 +1,119 @@
+---
+name: Uffizzi
+
+on:  
+  # REUSABLE WORKFLOW with INPUTS
+  # to keep this workflow simple, assumptions are made:
+    # - Checks out a repo with a kustomization.yaml file
+    # - Changes a image tag in the kustomization.yaml file
+    # - Deploys to a Uffizzi Cluster
+    # - Optionally notifies a Slack channel
+
+  workflow_call:
+    # allow reuse of this workflow in other repos
+    inputs:
+      repo:
+        description: Kustomize repo to checkout
+        required: true
+        type: string
+        # default: org/repo
+      image:
+        description: Image name to update in Kustomize
+        required: true
+        type: string
+        # default: ghcr.io/org/repo
+      tag:
+        description: New tag to use for the image
+        required: true
+        type: string
+      environments-root-dir:
+        description: Root directory where all environment directories are located
+        required: false
+        type: string
+        default: environments
+      environment-dir:
+        description: Path to the kustomization.yaml file
+        required: true
+        type: string
+        # default: staging01
+      slack-channel-id:
+        description: Slack channel ID to post to
+        required: false
+        type: string
+        # default: C0123456789
+
+    secrets:
+      slack-token:
+        description: Docker Hub username
+        required: false
+      github-token:
+        description: Docker Hub token with write access to the repo and PRs
+        required: true
+
+    outputs:
+      pr-url:
+        description: "The newly created GitHub Pull Request URL"
+        value: ${{ jobs.gitops-pr.outputs.pr-url }}
+
+# permissions: GITHUB_TOKEN are better set by the **calling** workflow
+# but we'll set defaults here for reference
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idpermissions
+permissions: { }
+
+jobs:
+  uffizzi:
+
+    name: Uffizzi
+
+    runs-on: ubuntu-latest
+
+    outputs:
+
+      pr-url: ${{ steps.cpr.outputs.pull-request-url }}
+
+    steps:
+          
+      - name: Checkout ${{ inputs.repo }}
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.repo }}
+          token: ${{ secrets.github-token }}
+
+      - name: Change image tag in kustomization.yaml
+        run: |
+          cd ${{ inputs.environments-root-dir }}/${{ inputs.environment-dir }}
+          kustomize edit set image "$(echo '${{ inputs.image }}' | tr '[:upper:]' '[:lower:]'):${{ inputs.tag }}"
+          cat kustomization.yaml
+
+      - name: Create Uffizzi Cluster
+        env:
+          UFFIZZI_SERVER: https://pr-1074-deployment-29388-uffizzi-platform.app.uffizzi.com/
+          UFFIZZI_USER: admin@uffizzi.com
+          UFFIZZI_PASSWORD: ${{ secrets.UFFIZZI_PASSWORD }}
+          UFFIZZI_PROJECT: default
+          UFFIZZI_IMAGE: uffizzi/cli:pr-224
+        run: |
+          # Create Uffizzi Cluster.
+          docker run --rm --env UFFIZZI_SERVER --env UFFIZZI_USER --env UFFIZZI_PASSWORD --env UFFIZZI_PROJECT --mount type=bind,source="$(pwd)",target=/home ${UFFIZZI_IMAGE} cluster create --name mostlydevops-${{ github.run_id }} --kubeconfig /home/kubeconfig
+          # Fetch `kubeconfig` file to connect to Cluster.
+          #docker run --rm --env UFFIZZI_SERVER --env UFFIZZI_USER --env UFFIZZI_PASSWORD --env UFFIZZI_PROJECT --mount type=bind,source="$(pwd)",target=/home ${UFFIZZI_IMAGE} cluster update-kubeconfig --name mostlydevops-${{ github.run_id }} --kubeconfig /home/kubeconfig
+
+#      - name: Create Pull Request
+#        id: cpr
+#        uses: peter-evans/create-pull-request@v5
+#        with:
+#          token: ${{ secrets.github-token }}
+#          commit-message: "Update image for ${{ inputs.environment-dir }}"
+#          title: "${{ inputs.environment-dir }} image update to: ${{ inputs.image }}:${{ inputs.tag }}"
+#          body: "Update image tag of file `${{ inputs.environments-root-dir }}/${{ inputs.environment-dir }}/kustomization.yaml` to `${{ inputs.image }}:${{ inputs.tag }}`"
+#          branch: "${{ inputs.tag }}"
+      
+      - name: Post to a Slack channel
+        id: slack
+        if: ${{ inputs.slack-channel-id }}
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: ${{ inputs.slack-channel-id }}
+          slack-message: "PR created ${{ steps.cpr.outputs.pull-request-url }}"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.slack-token }}
