@@ -1,0 +1,60 @@
+---
+name: Delete Uffizzi Cluster
+
+on:  
+
+  workflow_call:
+    # allow reuse of this workflow in other repos
+    inputs:
+      slack-channel-id:
+        description: Slack channel ID to post to
+        required: false
+        type: string
+        # default: C0123456789
+      pr-number:
+        description: Pull Request Number (or other unique ID)
+        required: true
+        type: string
+
+    secrets:
+      slack-token:
+        description: Docker Hub username
+        required: false
+      github-token:
+        description: Docker Hub token with write access to the repo and PRs
+        required: true
+      uffizzi-password:
+        description: Uffizzi account password
+        required: true
+
+# permissions: GITHUB_TOKEN are better set by the **calling** workflow
+# but we'll set defaults here for reference
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idpermissions
+permissions: { }
+
+jobs:
+  uffizzi:
+    name: Delete
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete Uffizzi Cluster
+        env:
+          UFFIZZI_SERVER: https://pr-1074-deployment-29388-uffizzi-platform.app.uffizzi.com/
+          UFFIZZI_USER: admin@uffizzi.com
+          UFFIZZI_PASSWORD: ${{ secrets.uffizzi-password }}
+          UFFIZZI_PROJECT: default
+          UFFIZZI_IMAGE: uffizzi/cli:pr-224
+          UFFIZZI_CLUSTER: pr-${{ inputs.pr-number }}
+        run: |
+          # Delete the Uffizzi Cluster.
+          docker run --rm --env UFFIZZI_SERVER --env UFFIZZI_USER --env UFFIZZI_PASSWORD --env UFFIZZI_PROJECT ${UFFIZZI_IMAGE} cluster delete --name ${UFFIZZI_CLUSTER}
+
+      - name: Post to a Slack channel
+        id: slack
+        if: ${{ inputs.slack-channel-id }}
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: ${{ inputs.slack-channel-id }}
+          slack-message: "PR deleted: `pr-${{ inputs.pr-number }}`"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.slack-token }}
