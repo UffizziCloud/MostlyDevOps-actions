@@ -41,6 +41,10 @@ on:
         required: false
         type: string
         # default: C0123456789
+      pr-number:
+        description: Pull Request Number (or other unique ID)
+        required: true
+        type: string
 
     secrets:
       slack-token:
@@ -50,10 +54,10 @@ on:
         description: Docker Hub token with write access to the repo and PRs
         required: true
 
-    outputs:
-      pr-url:
-        description: "The newly created GitHub Pull Request URL"
-        value: ${{ jobs.gitops-pr.outputs.pr-url }}
+#    outputs:
+#      pr-url:
+#        description: "The newly created GitHub Pull Request URL"
+#        value: ${{ jobs.gitops-pr.outputs.pr-url }}
 
 # permissions: GITHUB_TOKEN are better set by the **calling** workflow
 # but we'll set defaults here for reference
@@ -67,12 +71,10 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    outputs:
-
-      pr-url: ${{ steps.cpr.outputs.pull-request-url }}
+#    outputs:
+#      pr-url: ${{ steps.cpr.outputs.pull-request-url }}
 
     steps:
-          
       - name: Checkout ${{ inputs.repo }}
         uses: actions/checkout@v3
         with:
@@ -92,28 +94,28 @@ jobs:
           UFFIZZI_PASSWORD: ${{ secrets.UFFIZZI_PASSWORD }}
           UFFIZZI_PROJECT: default
           UFFIZZI_IMAGE: uffizzi/cli:pr-224
+          UFFIZZI_CLUSTER: pr-${{ inputs.pr-number }}
         run: |
-          # Create Uffizzi Cluster.
-          docker run --rm --env UFFIZZI_SERVER --env UFFIZZI_USER --env UFFIZZI_PASSWORD --env UFFIZZI_PROJECT --mount type=bind,source="$(pwd)",target=/home ${UFFIZZI_IMAGE} cluster create --name mostlydevops-${{ github.run_id }} --kubeconfig /home/kubeconfig
-          # Fetch `kubeconfig` file to connect to Cluster.
-          #docker run --rm --env UFFIZZI_SERVER --env UFFIZZI_USER --env UFFIZZI_PASSWORD --env UFFIZZI_PROJECT --mount type=bind,source="$(pwd)",target=/home ${UFFIZZI_IMAGE} cluster update-kubeconfig --name mostlydevops-${{ github.run_id }} --kubeconfig /home/kubeconfig
+          # Identify if a Cluster for this PR exists.
+          if docker run --rm --env UFFIZZI_SERVER --env UFFIZZI_USER --env UFFIZZI_PASSWORD --env UFFIZZI_PROJECT cluster list | grep --quiet ${UFFIZZI_CLUSTER}
+            # Create the Cluster if it does not yet exist.
+            then docker run --rm --env UFFIZZI_SERVER --env UFFIZZI_USER --env UFFIZZI_PASSWORD --env UFFIZZI_PROJECT --mount type=bind,source="$(pwd)",target=/home ${UFFIZZI_IMAGE} cluster create --name ${UFFIZZI_CLUSTER} --kubeconfig /home/kubeconfig
+            # If it already exists, fetch the `kubeconfig` to connect to it.
+            else docker run --rm --env UFFIZZI_SERVER --env UFFIZZI_USER --env UFFIZZI_PASSWORD --env UFFIZZI_PROJECT --mount type=bind,source="$(pwd)",target=/home ${UFFIZZI_IMAGE} cluster update-kubeconfig --name ${UFFIZZI_CLUSTER} --kubeconfig /home/kubeconfig
+          fi
 
-#      - name: Create Pull Request
-#        id: cpr
-#        uses: peter-evans/create-pull-request@v5
-#        with:
-#          token: ${{ secrets.github-token }}
-#          commit-message: "Update image for ${{ inputs.environment-dir }}"
-#          title: "${{ inputs.environment-dir }} image update to: ${{ inputs.image }}:${{ inputs.tag }}"
-#          body: "Update image tag of file `${{ inputs.environments-root-dir }}/${{ inputs.environment-dir }}/kustomization.yaml` to `${{ inputs.image }}:${{ inputs.tag }}`"
-#          branch: "${{ inputs.tag }}"
-      
+          #DEBUG: dump kubeconfig file (remove this secret leak!)
+          cat ./kubeconfig
+
+          # Deploy k8s manifests via `kustomize`.
+          kubectl apply --kubeconfig=./kubeconfig --kustomize=${{ inputs.environments-root-dir }}/${{ inputs.environment-dir }}
+
       - name: Post to a Slack channel
         id: slack
         if: ${{ inputs.slack-channel-id }}
         uses: slackapi/slack-github-action@v1
         with:
           channel-id: ${{ inputs.slack-channel-id }}
-          slack-message: "PR created ${{ steps.cpr.outputs.pull-request-url }}"
+          slack-message: "PR deployed `pr-${{ inputs.pr-number }}`"
         env:
           SLACK_BOT_TOKEN: ${{ secrets.slack-token }}
