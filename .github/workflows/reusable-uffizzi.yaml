@@ -80,6 +80,7 @@ jobs:
         with:
           repository: ${{ inputs.repo }}
           token: ${{ secrets.github-token }}
+          ref: uffizzi
 
       - name: Change image tag in kustomization.yaml
         run: |
