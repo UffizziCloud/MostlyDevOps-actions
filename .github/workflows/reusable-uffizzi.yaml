@@ -101,7 +101,7 @@ jobs:
           UFFIZZI_CLUSTER: pr-${{ inputs.pr-number }}
         run: |
           # Identify if a Cluster for this PR exists.
-          if docker run --rm --env UFFIZZI_SERVER --env UFFIZZI_USER --env UFFIZZI_PASSWORD --env UFFIZZI_PROJECT cluster list | grep --quiet ${UFFIZZI_CLUSTER}
+          if docker run --rm --env UFFIZZI_SERVER --env UFFIZZI_USER --env UFFIZZI_PASSWORD --env UFFIZZI_PROJECT ${UFFIZZI_IMAGE} cluster list | grep --quiet ${UFFIZZI_CLUSTER}
             # Create the Cluster if it does not yet exist.
             then docker run --rm --env UFFIZZI_SERVER --env UFFIZZI_USER --env UFFIZZI_PASSWORD --env UFFIZZI_PROJECT --mount type=bind,source="$(pwd)",target=/home ${UFFIZZI_IMAGE} cluster create --name ${UFFIZZI_CLUSTER} --kubeconfig /home/kubeconfig
             # If it already exists, fetch the `kubeconfig` to connect to it.
