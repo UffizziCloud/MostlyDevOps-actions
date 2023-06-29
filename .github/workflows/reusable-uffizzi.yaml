@@ -65,6 +65,7 @@ on:
 # permissions: GITHUB_TOKEN are better set by the **calling** workflow
 # but we'll set defaults here for reference
 # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idpermissions
+# Need `id-token: write` for OIDC: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect#adding-permissions-settings
 permissions:
   id-token: write
 
@@ -104,22 +105,22 @@ jobs:
           # Identify if a Cluster for this PR exists.
           if docker run --rm \
             --env UFFIZZI_SERVER \
-            --env REQUEST_TOKEN=${ACTIONS_ID_TOKEN_REQUEST_TOKEN} \
-            --env REQUEST_TOKEN_URL=${ACTIONS_ID_TOKEN_REQUEST_URL} \
+            --env UFFIZZ_USER \
+            --env UFFIZZI_PASSWORD \
             ${UFFIZZI_IMAGE} cluster list | grep --quiet ${UFFIZZI_CLUSTER}
           then
             # If it already exists, fetch the `kubeconfig` to connect to it.
             docker run --rm --env UFFIZZI_SERVER \
-              --env REQUEST_TOKEN=${ACTIONS_ID_TOKEN_REQUEST_TOKEN} \
-              --env REQUEST_TOKEN_URL=${ACTIONS_ID_TOKEN_REQUEST_URL} \
+              --env UFFIZZ_USER \
+              --env UFFIZZI_PASSWORD \
               --mount type=bind,source="$(pwd)",target=/home \
             ${UFFIZZI_IMAGE} cluster update-kubeconfig \
               --name ${UFFIZZI_CLUSTER} --kubeconfig /home/kubeconfig
           else
             # Create the Cluster if it does not yet exist.
             docker run --rm --env UFFIZZI_SERVER \
-              --env REQUEST_TOKEN=${ACTIONS_ID_TOKEN_REQUEST_TOKEN} \
-              --env REQUEST_TOKEN_URL=${ACTIONS_ID_TOKEN_REQUEST_URL} \
+              --env UFFIZZ_USER \
+              --env UFFIZZI_PASSWORD \
               --mount type=bind,source="$(pwd)",target=/home \
             ${UFFIZZI_IMAGE} cluster create \
               --name ${UFFIZZI_CLUSTER} --kubeconfig /home/kubeconfig
