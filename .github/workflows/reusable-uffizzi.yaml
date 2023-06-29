@@ -101,22 +101,41 @@ jobs:
           UFFIZZI_CLUSTER: pr-${{ inputs.pr-number }}
         run: |
           # Identify if a Cluster for this PR exists.
-          if docker run --rm --env UFFIZZI_SERVER --env UFFIZZI_USER --env UFFIZZI_PASSWORD --env UFFIZZI_PROJECT ${UFFIZZI_IMAGE} cluster list | grep --quiet ${UFFIZZI_CLUSTER}
+          if docker run --rm \
+            --env UFFIZZI_SERVER \
+            --env REQUEST_TOKEN=${ACTIONS_ID_TOKEN_REQUEST_TOKEN} \
+            --env REQUEST_TOKEN_URL=${ACTIONS_ID_TOKEN_REQUEST_URL} \
+            ${UFFIZZI_IMAGE} cluster list | grep --quiet ${UFFIZZI_CLUSTER}
           then
             # If it already exists, fetch the `kubeconfig` to connect to it.
-            docker run --rm --env UFFIZZI_SERVER --env UFFIZZI_USER --env UFFIZZI_PASSWORD --env UFFIZZI_PROJECT --mount type=bind,source="$(pwd)",target=/home ${UFFIZZI_IMAGE} cluster update-kubeconfig --name ${UFFIZZI_CLUSTER} --kubeconfig /home/kubeconfig
+            docker run --rm --env UFFIZZI_SERVER \
+              --env REQUEST_TOKEN=${ACTIONS_ID_TOKEN_REQUEST_TOKEN} \
+              --env REQUEST_TOKEN_URL=${ACTIONS_ID_TOKEN_REQUEST_URL} \
+              --mount type=bind,source="$(pwd)",target=/home \
+            ${UFFIZZI_IMAGE} cluster update-kubeconfig \
+              --name ${UFFIZZI_CLUSTER} --kubeconfig /home/kubeconfig
           else
             # Create the Cluster if it does not yet exist.
-            docker run --rm --env UFFIZZI_SERVER --env UFFIZZI_USER --env UFFIZZI_PASSWORD --env UFFIZZI_PROJECT --mount type=bind,source="$(pwd)",target=/home ${UFFIZZI_IMAGE} cluster create --name ${UFFIZZI_CLUSTER} --kubeconfig /home/kubeconfig
+            docker run --rm --env UFFIZZI_SERVER \
+              --env REQUEST_TOKEN=${ACTIONS_ID_TOKEN_REQUEST_TOKEN} \
+              --env REQUEST_TOKEN_URL=${ACTIONS_ID_TOKEN_REQUEST_URL} \
+              --mount type=bind,source="$(pwd)",target=/home \
+            ${UFFIZZI_IMAGE} cluster create \
+              --name ${UFFIZZI_CLUSTER} --kubeconfig /home/kubeconfig
             # Create an Ingress for the `web` Service.
-            kubectl create ingress web --class=nginx --rule="${UFFIZZI_CLUSTER}.wordsmith.app.qa-gke.uffizzi.com/*=web:8080" --kubeconfig ./kubeconfig
+            kubectl create ingress web \
+              --class=nginx \
+              --rule="${UFFIZZI_CLUSTER}.wordsmith.app.qa-gke.uffizzi.com/*=web:8080" \
+              --kubeconfig ./kubeconfig
           fi
 
           #DEBUG: dump kubeconfig file (remove this secret leak!)
           cat ./kubeconfig
 
           # Deploy k8s manifests via `kustomize`.
-          kubectl apply --kubeconfig=./kubeconfig --kustomize=${{ inputs.environments-root-dir }}/${{ inputs.environment-dir }}
+          kubectl apply \
+            --kubeconfig=./kubeconfig \
+            --kustomize=${{ inputs.environments-root-dir }}/${{ inputs.environment-dir }}
 
       - name: Post to a Slack channel
         id: slack
