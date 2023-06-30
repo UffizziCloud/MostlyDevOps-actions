@@ -39,7 +39,7 @@ jobs:
     steps:
       - name: Delete Uffizzi Cluster
         env:
-          UFFIZZI_SERVER: https://pr-1074-deployment-29388-uffizzi-platform.app.uffizzi.com/
+          UFFIZZI_SERVER: https://pr-1074-deployment-29862-uffizzi-platform.app.uffizzi.com/
           UFFIZZI_USER: admin@uffizzi.com
           UFFIZZI_PASSWORD: ${{ secrets.uffizzi-password }}
           UFFIZZI_PROJECT: default
@@ -47,7 +47,11 @@ jobs:
           UFFIZZI_CLUSTER: pr-${{ inputs.pr-number }}
         run: |
           # Delete the Uffizzi Cluster.
-          docker run --rm --env UFFIZZI_SERVER --env UFFIZZI_USER --env UFFIZZI_PASSWORD --env UFFIZZI_PROJECT ${UFFIZZI_IMAGE} cluster delete --name ${UFFIZZI_CLUSTER}
+          docker run --rm \
+            --env UFFIZZI_SERVER \
+            --env REQUEST_TOKEN=${ACTIONS_ID_TOKEN_REQUEST_TOKEN} \
+            --env REQUEST_TOKEN_URL=${ACTIONS_ID_TOKEN_REQUEST_URL} \
+            ${UFFIZZI_IMAGE} cluster delete --name ${UFFIZZI_CLUSTER}
 
       - name: Post to a Slack channel
         id: slack

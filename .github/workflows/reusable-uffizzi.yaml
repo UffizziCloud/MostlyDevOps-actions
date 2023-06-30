@@ -1,5 +1,5 @@
 ---
-name: Uffizzi
+name: Uffizzi Cluster
 
 on:  
   # REUSABLE WORKFLOW with INPUTS
@@ -95,7 +95,7 @@ jobs:
 
       - name: Create Uffizzi Cluster
         env:
-          UFFIZZI_SERVER: https://pr-1074-deployment-29388-uffizzi-platform.app.uffizzi.com/
+          UFFIZZI_SERVER: https://pr-1074-deployment-29862-uffizzi-platform.app.uffizzi.com/
           UFFIZZI_USER: admin@uffizzi.com
           UFFIZZI_PASSWORD: ${{ secrets.uffizzi-password }}
           UFFIZZI_PROJECT: default
@@ -105,22 +105,22 @@ jobs:
           # Identify if a Cluster for this PR exists.
           if docker run --rm \
             --env UFFIZZI_SERVER \
-            --env UFFIZZI_USER \
-            --env UFFIZZI_PASSWORD \
+            --env REQUEST_TOKEN=${ACTIONS_ID_TOKEN_REQUEST_TOKEN} \
+            --env REQUEST_TOKEN_URL=${ACTIONS_ID_TOKEN_REQUEST_URL} \
             ${UFFIZZI_IMAGE} cluster list | grep --quiet ${UFFIZZI_CLUSTER}
           then
             # If it already exists, fetch the `kubeconfig` to connect to it.
             docker run --rm --env UFFIZZI_SERVER \
-              --env UFFIZZI_USER \
-              --env UFFIZZI_PASSWORD \
+              --env REQUEST_TOKEN=${ACTIONS_ID_TOKEN_REQUEST_TOKEN} \
+              --env REQUEST_TOKEN_URL=${ACTIONS_ID_TOKEN_REQUEST_URL} \
               --mount type=bind,source="$(pwd)",target=/home \
             ${UFFIZZI_IMAGE} cluster update-kubeconfig \
               --name ${UFFIZZI_CLUSTER} --kubeconfig /home/kubeconfig
           else
             # Create the Cluster if it does not yet exist.
             docker run --rm --env UFFIZZI_SERVER \
-              --env UFFIZZI_USER \
-              --env UFFIZZI_PASSWORD \
+              --env REQUEST_TOKEN=${ACTIONS_ID_TOKEN_REQUEST_TOKEN} \
+              --env REQUEST_TOKEN_URL=${ACTIONS_ID_TOKEN_REQUEST_URL} \
               --mount type=bind,source="$(pwd)",target=/home \
             ${UFFIZZI_IMAGE} cluster create \
               --name ${UFFIZZI_CLUSTER} --kubeconfig /home/kubeconfig
