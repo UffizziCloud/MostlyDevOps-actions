@@ -105,13 +105,13 @@ jobs:
           # Identify if a Cluster for this PR exists.
           if docker run --rm \
             --env UFFIZZI_SERVER \
-            --env UFFIZZ_USER \
+            --env UFFIZZI_USER \
             --env UFFIZZI_PASSWORD \
             ${UFFIZZI_IMAGE} cluster list | grep --quiet ${UFFIZZI_CLUSTER}
           then
             # If it already exists, fetch the `kubeconfig` to connect to it.
             docker run --rm --env UFFIZZI_SERVER \
-              --env UFFIZZ_USER \
+              --env UFFIZZI_USER \
               --env UFFIZZI_PASSWORD \
               --mount type=bind,source="$(pwd)",target=/home \
             ${UFFIZZI_IMAGE} cluster update-kubeconfig \
@@ -119,7 +119,7 @@ jobs:
           else
             # Create the Cluster if it does not yet exist.
             docker run --rm --env UFFIZZI_SERVER \
-              --env UFFIZZ_USER \
+              --env UFFIZZI_USER \
               --env UFFIZZI_PASSWORD \
               --mount type=bind,source="$(pwd)",target=/home \
             ${UFFIZZI_IMAGE} cluster create \
