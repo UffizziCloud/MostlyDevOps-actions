@@ -95,11 +95,11 @@ jobs:
 
       - name: Create Uffizzi Cluster
         env:
-          UFFIZZI_SERVER: https://pr-1074-deployment-29388-uffizzi-platform.app.uffizzi.com/
+          UFFIZZI_SERVER: https://pr-1100-deployment-29999-uffizzi-platform.app.uffizzi.com/
           UFFIZZI_USER: admin@uffizzi.com
           UFFIZZI_PASSWORD: ${{ secrets.uffizzi-password }}
           UFFIZZI_PROJECT: default
-          UFFIZZI_IMAGE: uffizzi/cli:pr-224
+          UFFIZZI_IMAGE: uffizzi/cli:pr-239
           UFFIZZI_CLUSTER: pr-${{ inputs.pr-number }}
         run: |
           # Identify if a Cluster for this PR exists.
