@@ -132,9 +132,9 @@ jobs:
           fi
 
           #DEBUG: dump kubeconfig file (remove this secret leak!)
-          cat ./kubeconfig
-          echo "==================="
           cat /home/kubeconfig
+          echo "==================="
+          cat ./kubeconfig
 
           # Deploy k8s manifests via `kustomize`.
           kubectl apply \
