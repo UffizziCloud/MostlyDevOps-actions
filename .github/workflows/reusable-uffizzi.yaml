@@ -93,7 +93,6 @@ jobs:
       - name: Create and/or Connect to Uffizzi Cluster
         env:
           UFFIZZI_SERVER: https://app.uffizzi.com/
-          UFFIZZI_PROJECT: default
           UFFIZZI_IMAGE: uffizzi/cli:v2
           UFFIZZI_CLUSTER: pr-${{ inputs.pr-number }}
         run: |
@@ -134,12 +133,15 @@ jobs:
 
           echo "You can access this cluster with a command like \`uffizzi cluster update-kubeconfig --name=${UFFIZZI_CLUSTER} --kubeconfig=/tmp/kubeconfig\`" >> $GITHUB_STEP_SUMMARY
           echo "and then \`kubectl --kubeconfig /tmp/kubeconfig\` or similar." >> $GITHUB_STEP_SUMMARY
+
+          echo "Ingress for the \`web\` Service at [http://${UFFIZZI_CLUSTER}.wordsmith.app.qa-gke.uffizzi.com](http://${UFFIZZI_CLUSTER}.wordsmith.app.qa-gke.uffizzi.com)." >> $GITHUB_STEP_SUMMARY
+
+      - name: Deploy Kustomize onto Uffizzi Cluster
+        run: |
           # Deploy k8s manifests via `kustomize`.
           kubectl apply \
             --kubeconfig=./kubeconfig \
             --kustomize=${{ inputs.environments-root-dir }}/${{ inputs.environment-dir }}
-
-          echo "Ingress for the \`web\` Service at [http://${UFFIZZI_CLUSTER}.wordsmith.app.qa-gke.uffizzi.com](http://${UFFIZZI_CLUSTER}.wordsmith.app.qa-gke.uffizzi.com)." >> $GITHUB_STEP_SUMMARY
 
           #DEBUG: Dump deployed objects to workflow output.
 #          echo '```' >> $GITHUB_STEP_SUMMARY
