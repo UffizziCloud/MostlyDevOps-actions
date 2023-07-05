@@ -46,7 +46,7 @@ jobs:
             --env UFFIZZI_SERVER \
             --env REQUEST_TOKEN=${ACTIONS_ID_TOKEN_REQUEST_TOKEN} \
             --env REQUEST_TOKEN_URL=${ACTIONS_ID_TOKEN_REQUEST_URL} \
-            ${UFFIZZI_IMAGE} cluster delete --name ${UFFIZZI_CLUSTER}
+            ${UFFIZZI_IMAGE} cluster delete ${UFFIZZI_CLUSTER}
 
       - name: Post to a Slack channel
         id: slack
