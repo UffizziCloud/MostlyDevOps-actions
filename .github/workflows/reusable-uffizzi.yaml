@@ -120,7 +120,7 @@ jobs:
             echo "Available at \`${KUBERNETES_SERVICE_HOST}\`." >> $GITHUB_STEP_SUMMARY
             echo "Waiting for $KUBERNETES_SERVICE_HOST"
             # Wait for the Cluster Master API to be available.
-            sleep 3 #TODO improve this
+            sleep 10 #TODO improve this
             # Create an Ingress for the `web` Service.
             kubectl create ingress web \
               --class=nginx \
