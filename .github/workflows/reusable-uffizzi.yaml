@@ -69,7 +69,7 @@ permissions:
 jobs:
   uffizzi:
 
-    name: Uffizzi
+    name: Virtual Cluster
 
     runs-on: ubuntu-latest
 
