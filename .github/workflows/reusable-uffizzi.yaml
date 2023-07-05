@@ -73,9 +73,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-#    outputs:
-#      pr-url: ${{ steps.cpr.outputs.pull-request-url }}
-
     steps:
       - name: Checkout ${{ inputs.repo }}
         uses: actions/checkout@v3
@@ -143,7 +140,7 @@ jobs:
             --kubeconfig=./kubeconfig \
             --kustomize=${{ inputs.environments-root-dir }}/${{ inputs.environment-dir }}
 
-          #DEBUG: Dump deployed objects to workflow output.
+#DEBUG: Dump deployed objects to workflow output.
 #          echo '```' >> $GITHUB_STEP_SUMMARY
 #          kubectl apply \
 #            --kubeconfig=./kubeconfig \
@@ -151,7 +148,7 @@ jobs:
 #            --kustomize=${{ inputs.environments-root-dir }}/${{ inputs.environment-dir }} >> $GITHUB_STEP_SUMMARY
 #          echo '```' >> $GITHUB_STEP_SUMMARY
 
-          #DEBUG: dump kubeconfig file (remove this secret leak!)
+#DEBUG: dump kubeconfig file (remove this secret leak!)
 #          echo '```' >> $GITHUB_STEP_SUMMARY
 #          cat ./kubeconfig >> $GITHUB_STEP_SUMMARY
 #          echo '```' >> $GITHUB_STEP_SUMMARY
