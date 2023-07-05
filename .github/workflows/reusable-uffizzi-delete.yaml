@@ -48,23 +48,23 @@ jobs:
             --env REQUEST_TOKEN_URL=${ACTIONS_ID_TOKEN_REQUEST_URL} \
             ${UFFIZZI_IMAGE} cluster delete ${UFFIZZI_CLUSTER}
 
-      - name: Find Comment
-        uses: peter-evans/find-comment@v2
-        id: fc
-        with:
-          repository: UffizziCloud/MostlyDevOps-wordsmith-api
-          issue-number: ${{ inputs.pr-number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: access this cluster
-
-      - name: Create or update comment
-        uses: peter-evans/create-or-update-comment@v3
-        with:
-          repository: UffizziCloud/MostlyDevOps-wordsmith-api
-          comment-id: ${{ steps.fc.outputs.comment-id }}
-          issue-number: ${{ inputs.pr-number }}
-          body: "Cluster `pr-${{ inputs.pr-number }}` deleted."
-          edit-mode: replace
+#      - name: Find Comment
+#        uses: peter-evans/find-comment@v2
+#        id: fc
+#        with:
+#          repository: UffizziCloud/MostlyDevOps-wordsmith-api
+#          issue-number: ${{ inputs.pr-number }}
+#          comment-author: 'github-actions[bot]'
+#          body-includes: access this cluster
+#
+#      - name: Create or update comment
+#        uses: peter-evans/create-or-update-comment@v3
+#        with:
+#          repository: UffizziCloud/MostlyDevOps-wordsmith-api
+#          comment-id: ${{ steps.fc.outputs.comment-id }}
+#          issue-number: ${{ inputs.pr-number }}
+#          body: "Cluster `pr-${{ inputs.pr-number }}` deleted."
+#          edit-mode: replace
 
       - name: Post to a Slack channel
         id: slack
