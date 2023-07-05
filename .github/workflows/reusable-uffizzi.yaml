@@ -124,6 +124,10 @@ jobs:
               --mount type=bind,source="$(pwd)",target=/home \
             ${UFFIZZI_IMAGE} cluster create \
               --name=${UFFIZZI_CLUSTER} --kubeconfig="/home/kubeconfig"
+            # Wait for the Cluster Master API to be available.
+            export KUBERNETES_SERVICE_HOST=`yq '.clusters[0].cluster.server' < ./kubeconfig | cut -d'/' -f3`
+            echo "Waiting for $KUBERNETES_SERVICE_HOST"
+            sleep 3 #TODO improve this
             # Create an Ingress for the `web` Service.
             kubectl create ingress web \
               --class=nginx \
