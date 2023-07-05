@@ -124,9 +124,11 @@ jobs:
               --mount type=bind,source="$(pwd)",target=/home \
             ${UFFIZZI_IMAGE} cluster create \
               --name=${UFFIZZI_CLUSTER} --kubeconfig="/home/kubeconfig"
-            # Wait for the Cluster Master API to be available.
+            echo "Uffizzi Cluster \`${UFFIZZI_CLUSTER}\` created." >> $GITHUB_STEP_SUMMARY
             export KUBERNETES_SERVICE_HOST=`yq '.clusters[0].cluster.server' < ./kubeconfig | cut -d'/' -f3`
+            echo "Available at \`${KUBERNETES_SERVICE_HOST}\`." >> $GITHUB_STEP_SUMMARY
             echo "Waiting for $KUBERNETES_SERVICE_HOST"
+            # Wait for the Cluster Master API to be available.
             sleep 3 #TODO improve this
             # Create an Ingress for the `web` Service.
             kubectl create ingress web \
@@ -135,13 +137,27 @@ jobs:
               --kubeconfig ./kubeconfig
           fi
 
-          #DEBUG: dump kubeconfig file (remove this secret leak!)
-          cat ./kubeconfig
-
+          echo "You can access this cluster with a command like \`uffizzi cluster update-kubeconfig --name=${UFFIZZI_CLUSTER} --kubeconfig=/tmp/kubeconfig\`" >> $GITHUB_STEP_SUMMARY
+          echo "and then \`kubectl --kubeconfig /tmp/kubeconfig\` or similar." >> $GITHUB_STEP_SUMMARY
           # Deploy k8s manifests via `kustomize`.
           kubectl apply \
             --kubeconfig=./kubeconfig \
             --kustomize=${{ inputs.environments-root-dir }}/${{ inputs.environment-dir }}
+
+          echo "Ingress for the \`web\` Service at [http://${UFFIZZI_CLUSTER}.wordsmith.app.qa-gke.uffizzi.com](http://${UFFIZZI_CLUSTER}.wordsmith.app.qa-gke.uffizzi.com)." >> $GITHUB_STEP_SUMMARY
+
+          # Dump deployed objects to workflow output.
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          kubectl apply \
+            --kubeconfig=./kubeconfig \
+            --dry-run=client --output=yaml
+            --kustomize=${{ inputs.environments-root-dir }}/${{ inputs.environment-dir }} >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+          #DEBUG: dump kubeconfig file (remove this secret leak!)
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat ./kubeconfig >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Post to a Slack channel
         id: slack
