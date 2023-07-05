@@ -55,7 +55,7 @@ jobs:
           repository: UffizziCloud/MostlyDevOps-wordsmith-api
           issue-number: ${{ inputs.pr-number }}
           comment-author: 'github-actions[bot]'
-          body-includes: pr-${{ inputs.pr-number }}
+          body-includes: access this cluster
 
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v3
