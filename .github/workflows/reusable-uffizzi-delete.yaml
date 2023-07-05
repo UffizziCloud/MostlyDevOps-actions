@@ -52,6 +52,7 @@ jobs:
         uses: peter-evans/find-comment@v2
         id: fc
         with:
+          repository: UffizziCloud/MostlyDevOps-wordsmith-api
           issue-number: ${{ inputs.pr-number }}
           comment-author: 'github-actions[bot]'
           body-includes: pr-${{ inputs.pr-number }}
@@ -59,6 +60,7 @@ jobs:
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v3
         with:
+          repository: UffizziCloud/MostlyDevOps-wordsmith-api
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ inputs.pr-number }}
           body: "Cluster `pr-${{ inputs.pr-number }}` deleted."
