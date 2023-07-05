@@ -168,7 +168,12 @@ jobs:
           repository: UffizziCloud/MostlyDevOps-wordsmith-api
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ inputs.pr-number }}
-          body-path: ${{ env.GITHUB_STEP_SUMMARY }}
+          body: |
+            Uffizzi Cluster \`pr-${{ inputs.pr-number }}\` created.
+            You can access this cluster with a command like \`uffizzi cluster update-kubeconfig --name=pr-${{ inputs.pr-number }} --kubeconfig=/tmp/kubeconfig\`
+            and then \`kubectl --kubeconfig /tmp/kubeconfig\` or similar.
+            Ingress for the \`web\` Service at [http://pr-${{ inputs.pr-number }}.wordsmith.app.qa-gke.uffizzi.com](http://pr-${{ inputs.pr-number }}.wordsmith.app.qa-gke.uffizzi.com).
+
           edit-mode: replace
 
       - name: Post to a Slack channel
