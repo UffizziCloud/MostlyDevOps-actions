@@ -146,18 +146,18 @@ jobs:
 
           echo "Ingress for the \`web\` Service at [http://${UFFIZZI_CLUSTER}.wordsmith.app.qa-gke.uffizzi.com](http://${UFFIZZI_CLUSTER}.wordsmith.app.qa-gke.uffizzi.com)." >> $GITHUB_STEP_SUMMARY
 
-          # Dump deployed objects to workflow output.
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          kubectl apply \
-            --kubeconfig=./kubeconfig \
-            --dry-run=client --output=yaml \
-            --kustomize=${{ inputs.environments-root-dir }}/${{ inputs.environment-dir }} >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          #DEBUG: Dump deployed objects to workflow output.
+#          echo '```' >> $GITHUB_STEP_SUMMARY
+#          kubectl apply \
+#            --kubeconfig=./kubeconfig \
+#            --dry-run=client --output=yaml \
+#            --kustomize=${{ inputs.environments-root-dir }}/${{ inputs.environment-dir }} >> $GITHUB_STEP_SUMMARY
+#          echo '```' >> $GITHUB_STEP_SUMMARY
 
           #DEBUG: dump kubeconfig file (remove this secret leak!)
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          cat ./kubeconfig >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+#          echo '```' >> $GITHUB_STEP_SUMMARY
+#          cat ./kubeconfig >> $GITHUB_STEP_SUMMARY
+#          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Post to a Slack channel
         id: slack
