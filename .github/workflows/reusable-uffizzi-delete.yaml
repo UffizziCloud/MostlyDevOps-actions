@@ -23,9 +23,6 @@ on:
       github-token:
         description: Docker Hub token with write access to the repo and PRs
         required: true
-      uffizzi-password:
-        description: Uffizzi account password
-        required: true
 
 # permissions: GITHUB_TOKEN are better set by the **calling** workflow
 # but we'll set defaults here for reference
@@ -40,8 +37,6 @@ jobs:
       - name: Delete Uffizzi Cluster
         env:
           UFFIZZI_SERVER: https://app.uffizzi.com/
-          UFFIZZI_USER: admin@uffizzi.com
-          UFFIZZI_PASSWORD: ${{ secrets.uffizzi-password }}
           UFFIZZI_PROJECT: default
           UFFIZZI_IMAGE: uffizzi/cli:v2
           UFFIZZI_CLUSTER: pr-${{ inputs.pr-number }}
