@@ -95,7 +95,7 @@ jobs:
 
       - name: Create Uffizzi Cluster
         env:
-          UFFIZZI_SERVER: https://pr-1100-deployment-30193-uffizzi-platform.app.uffizzi.com/
+          UFFIZZI_SERVER: https://app.uffizzi.com/
           UFFIZZI_USER: admin@uffizzi.com
           UFFIZZI_PASSWORD: ${{ secrets.uffizzi-password }}
           UFFIZZI_PROJECT: default
