@@ -39,11 +39,11 @@ jobs:
     steps:
       - name: Delete Uffizzi Cluster
         env:
-          UFFIZZI_SERVER: https://pr-1074-deployment-29862-uffizzi-platform.app.uffizzi.com/
+          UFFIZZI_SERVER: https://app.uffizzi.com/
           UFFIZZI_USER: admin@uffizzi.com
           UFFIZZI_PASSWORD: ${{ secrets.uffizzi-password }}
           UFFIZZI_PROJECT: default
-          UFFIZZI_IMAGE: uffizzi/cli:pr-224
+          UFFIZZI_IMAGE: uffizzi/cli:v2
           UFFIZZI_CLUSTER: pr-${{ inputs.pr-number }}
         run: |
           # Delete the Uffizzi Cluster.
