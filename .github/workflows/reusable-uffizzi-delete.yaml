@@ -48,6 +48,22 @@ jobs:
             --env REQUEST_TOKEN_URL=${ACTIONS_ID_TOKEN_REQUEST_URL} \
             ${UFFIZZI_IMAGE} cluster delete ${UFFIZZI_CLUSTER}
 
+      - name: Find Comment
+        uses: peter-evans/find-comment@v2
+        id: fc
+        with:
+          issue-number: ${{ inputs.pr-number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: pr-${{ inputs.pr-number }}
+
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ inputs.pr-number }}
+          body: "Cluster `pr-${{ inputs.pr-number }}` deleted."
+          edit-mode: replace
+
       - name: Post to a Slack channel
         id: slack
         if: ${{ inputs.slack-channel-id }}
