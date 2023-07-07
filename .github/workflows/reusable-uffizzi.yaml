@@ -89,7 +89,7 @@ jobs:
 
       - name: Create and/or Connect to Uffizzi Cluster
         env:
-          UFFIZZI_SERVER: https://pr-1114-deployment-30391-uffizzi-platform.app.uffizzi.com/
+          UFFIZZI_SERVER: https://app.uffizzi.com/
           UFFIZZI_IMAGE: uffizzi/cli:v2
           UFFIZZI_CLUSTER: pr-${{ inputs.pr-number }}
         run: |
